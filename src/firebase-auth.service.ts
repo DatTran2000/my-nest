@@ -1,7 +1,7 @@
 import { Inject, Injectable, Module } from "@nestjs/common";
 import { ConfigService } from '@nestjs/config';
 import { initializeApp, getApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { Controller, Get, Req } from '@nestjs/common';
 import { Request } from "@nestjs/common";
 
@@ -26,16 +26,31 @@ export class FirebaseAuthService {
         this.auth = getAuth(app); 
     }
     
-    getLogin(@Req() req : Request) {
-        
-        signInWithEmailAndPassword(this.auth, req.body['email'], req.body['password'])
-        .then((userCredential) => {
-        const user = userCredential.user;
-            // console.log(user);         
+    async getLogin(@Req() req : Request) {
+        const { stsTokenManager: { accessToken, refreshToken, expirationTime }, uid } = await signInWithEmailAndPassword(this.auth, req.body['email'], req.body['password'])
+        .then((userCredential) => {            
+            return userCredential.user;
         })
         .catch((error) => {
             const errorCode = error.code;
             const errorMessage = error.message;
+            return { ... errorMessage, ... errorCode };
         });
+        return { accessToken, refreshToken, expirationTime, uid }    
+    }
+
+    async updateUser(@Req() req : Request) {
+        const displayName = req.body['displayName'];
+        const photoURL = req.body['photoURL'];
+              
+        const data = await updateProfile(this.auth.currentUser, {
+            displayName: displayName, 
+            photoURL: photoURL,
+        }).then(() => {
+            return { photoURL: this.auth.currentUser.photoURL, displayName: this.auth.currentUser.displayName }
+        }).catch((error) => {
+            return error
+        });
+        return data;
     }
 }
