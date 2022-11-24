@@ -1,6 +1,6 @@
 import { AppService } from './app.service';
 import { FirebaseAuthService } from './firebase-auth.service';
-import { Controller, Get, Req, Put } from '@nestjs/common';
+import { Controller, Get, Req, Put, Post } from '@nestjs/common';
 import { Request } from '@nestjs/common';
 
 @Controller()
@@ -20,5 +20,10 @@ export class AppController {
   @Put('update-user') 
   updateUser(@Req() req : Request): any {
     return this.firebaseAuthService.updateUser(req);
+  }
+
+  @Post('create-ad')
+  createAd(@Req() req : Request): any {
+    return this.firebaseAuthService.createAd(req);
   }
 }
