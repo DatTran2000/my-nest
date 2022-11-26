@@ -126,7 +126,7 @@ export class FirebaseAuthService {
             })
 
         const ads = await setDoc(doc(this.db, "advertisement", uuid), {
-            ads_game: ads_name,
+            ads_name: ads_name,
             ads_remarks: ads_remarks,
             ads_type: ads_type,
             created_user_uuid: created_user_uuid,
