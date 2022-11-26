@@ -1,7 +1,10 @@
 import { AppService } from './app.service';
 import { FirebaseAuthService } from './firebase-auth.service';
-import { Controller, Get, Req, Put, Post } from '@nestjs/common';
+import { Controller, Get, Req, Put, Post, Body } from '@nestjs/common';
 import { Request } from '@nestjs/common';
+import { UpdateUserProfileDto } from './dto/UpdateUserProfileDto';
+import { LoginUserDto } from './dto/LoginUserDto';
+import { CreateAdDto } from './dto/CreateAdDto';
 
 @Controller()
 export class AppController {
@@ -13,17 +16,17 @@ export class AppController {
   }
 
   @Get('login') 
-  getLogin(@Req() req : Request): object {
-    return this.firebaseAuthService.getLogin(req);
+  getLogin(@Body() loginUserDto : LoginUserDto): object {
+    return this.firebaseAuthService.getLogin(loginUserDto);
   }
 
   @Put('update-user') 
-  updateUser(@Req() req : Request): any {
-    return this.firebaseAuthService.updateUser(req);
+  updateUser(@Body() updateUserProfileDto: UpdateUserProfileDto): object {
+    return this.firebaseAuthService.updateUser(updateUserProfileDto);
   }
 
   @Post('create-ad')
-  createAd(@Req() req : Request): any {
-    return this.firebaseAuthService.createAd(req);
+  createAd(@Body() createAdDto : CreateAdDto): object {
+    return this.firebaseAuthService.createAd(createAdDto);
   }
 }

@@ -1,10 +1,11 @@
-import { Inject, Injectable, Module } from "@nestjs/common";
+import { Body, Inject, Injectable, Module } from "@nestjs/common";
 import { ConfigService } from '@nestjs/config';
 import { initializeApp, getApp } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { Controller, Get, Req } from '@nestjs/common';
-import { Request } from "@nestjs/common";
 import { collection, getDocs, getFirestore, setDoc, doc } from "firebase/firestore";
+import { UpdateUserProfileDto } from './dto/UpdateUserProfileDto';
+import { LoginUserDto } from './dto/LoginUserDto';
+import { CreateAdDto } from "./dto/CreateAdDto";
 
 @Injectable()
 
@@ -29,8 +30,9 @@ export class FirebaseAuthService {
         this.db = getFirestore(app);
     }
 
-    async getLogin(@Req() req: Request) {
-        const { stsTokenManager: { accessToken, refreshToken, expirationTime }, uid } = await signInWithEmailAndPassword(this.auth, req.body['email'], req.body['password'])
+    async getLogin(@Body() loginUserDto : LoginUserDto) {
+        const { stsTokenManager: { accessToken, refreshToken, expirationTime }, uid } = 
+        await signInWithEmailAndPassword(this.auth, loginUserDto.email, loginUserDto.password)
             .then((userCredential) => {
                 return userCredential.user;
             })
@@ -42,10 +44,10 @@ export class FirebaseAuthService {
         return { accessToken, refreshToken, expirationTime, uid }
     }
 
-    async updateUser(@Req() req: Request) {
-        const displayName = req.body['displayName'];
-        const photoURL = req.body['photoURL'];
-
+    async updateUser(@Body() updateUserProfileDto: UpdateUserProfileDto) {
+        const displayName = updateUserProfileDto.displayName ? updateUserProfileDto.displayName : null;
+        const photoURL = updateUserProfileDto.photoURL ? updateUserProfileDto.photoURL : null;
+        
         const data = await updateProfile(this.auth.currentUser, {
             displayName: displayName,
             photoURL: photoURL,
@@ -57,26 +59,74 @@ export class FirebaseAuthService {
         return data;
     }
 
-    async createAd(@Req() req: Request) {
-        const ads_game = req.body['ads_game'];
-        const ads_remarks = req.body['ads_remarks'];
-        const ads_type = req.body['ads_type'];
-        const created_user_uuid = this.auth.currentUser != null ? this.auth.currentUser.uid : "xxx";
-        const expiry_date = req.body['expiry_date'];
-        const link_url = req.body['link_url'];
-        const priority = req.body['priority'];
-        const start_date = req.body['start_date'];
-        const supplier_uuid = req.body['supplier_uuid'];
-        const unit_price = req.body['unit_price'];
-        const uuid = req.body['uuid'];
+    async createAd(@Body() createAdDto : CreateAdDto) {
 
-        const ads_tags = req.body['ads_tags'];
-        const banners = req.body['banners'];
-        const limiting_conditions = req.body['limiting_conditions'];
-        const show_conditions = req.body['show_conditions'];
+        const ads_name = createAdDto.ads_name;
+        const ads_remarks = createAdDto.ads_remarks;
+        const ads_type = createAdDto.ads_type;
+        const created_user_uuid = this.auth.currentUser ? this.auth.currentUser.uid : "xxx";
+        const expiry_date = createAdDto.expiry_date;
+        const link_url = createAdDto.link_url;
+        const priority = createAdDto.priority;
+        const start_date = createAdDto.start_date;
+        const supplier_uuid = createAdDto.supplier_uuid;
+        const unit_price = createAdDto.unit_price;
+        const uuid = createAdDto.uuid;
 
-        const ads = await setDoc(doc(this.db, "advertisement", created_user_uuid), {
-            ads_game: ads_game,
+        // Nested collection 
+        const banners = createAdDto.banners;
+        const ads_tags = createAdDto.ads_tags;
+        const limiting_conditions = createAdDto.limiting_conditions;
+        const show_conditions = createAdDto.show_conditions;
+
+        const banners_collection = 
+            await setDoc(doc(this.db, "advertisement", uuid, "banners", uuid), {
+                uuid: banners['uuid'] ? banners['uuid'] : null,
+                firestore_path: banners['firestore_path'] ? banners['firestore_path'] : null,
+                banner_group: banners['banner_group'] ? banners['banner_group'] : null,
+                order: banners['order'] ? banners['order'] : null
+            }).then(() => {                
+                return { uuid: banners['uuid'], firestore_path: banners['firestore_path'], 
+                banner_group: banners['banner_group'], order: banners['order'] }
+            })
+
+        const ads_tags_collection = doc(this.db, "advertisement", uuid, "ads_tag", uuid);
+            await setDoc(ads_tags_collection, {
+                tag_uuid: ads_tags['tag_uuid'] ? ads_tags['tag_uuid'] : null
+            }).then(() => {
+                return { tag_uuid: ads_tags['tag_uuid'] }
+            })
+
+        const limiting_conditions_collection = doc(this.db, "advertisement", uuid, "limiting_conditions", uuid)
+            await setDoc(limiting_conditions_collection, {
+                uuid: limiting_conditions['uuid'] ? limiting_conditions['uuid'] : null,
+                tag_uuid: limiting_conditions['tag_uuid'] ? limiting_conditions['tag_uuid'] : null,
+                minimun: limiting_conditions['minimun'] ? limiting_conditions['minimun'] : null,
+                maximun: limiting_conditions['maximun'] ? limiting_conditions['maximun'] : null
+            }).then(() => {
+                return {
+                    uuid: limiting_conditions['uuid'],
+                    tag_uuid: limiting_conditions['tag_uuid'],
+                    minimun: limiting_conditions['minimun'],
+                    maximun: limiting_conditions['maximun']
+                }
+            })
+        
+        const show_conditions_collection = doc(this.db, "advertisement", uuid , "show_conditions", uuid);
+            await setDoc(show_conditions_collection, {
+                uuid: show_conditions['uuid'] ? show_conditions['uuid'] : null,
+                date_of_week_to_show: show_conditions['date_of_week_to_show'] ? show_conditions['date_of_week_to_show'] : null,
+                range_of_hours_to_show: show_conditions['range_of_hours_to_show'] ? show_conditions['range_of_hours_to_show'] : null
+            }).then(() => {
+                return {
+                    uuid: show_conditions['uuid'],
+                    date_of_week_to_show: show_conditions['date_of_week_to_show'],
+                    range_of_hours_to_show: show_conditions['range_of_hours_to_show']
+                }
+            })
+
+        const ads = await setDoc(doc(this.db, "advertisement", uuid), {
+            ads_game: ads_name,
             ads_remarks: ads_remarks,
             ads_type: ads_type,
             created_user_uuid: created_user_uuid,
@@ -86,19 +136,18 @@ export class FirebaseAuthService {
             start_date: start_date,
             supplier_uuid: supplier_uuid,
             unit_price: unit_price,
-            uuid: uuid,
-            ads_tags: ads_tags,
-            banners: banners,
-            limiting_conditions: limiting_conditions,
-            show_conditions: show_conditions
-        }).then(() => {
+            uuid: uuid,  
+            banners: banners_collection,
+            limiting_conditions: limiting_conditions_collection,
+            show_conditions: show_conditions_collection,
+        })
+        .then(() => {
             return {
                 uuid, unit_price, supplier_uuid, start_date, priority,
                 link_url, expiry_date, created_user_uuid, ads_type, ads_remarks, 
-                ads_game, ads_tags, banners, limiting_conditions, show_conditions
+                ads_name, banners, limiting_conditions, show_conditions
             }
         });
-
         return ads
     }
 }
