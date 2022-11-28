@@ -40,4 +40,9 @@ export class AppController {
   deleteAd(@Param('uuid') uuid : string) {
     return this.firebaseAuthService.deleteAd(uuid);
   }
+
+  @Get('all-ad')
+  getAllAd() {
+    return this.firebaseAuthService.gellAllAd();
+  }
 }

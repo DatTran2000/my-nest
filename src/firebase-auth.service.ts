@@ -2,7 +2,7 @@ import { Body, Inject, Injectable, Module, Param } from "@nestjs/common";
 import { ConfigService } from '@nestjs/config';
 import { initializeApp, getApp } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { collection, getDocs, getFirestore, setDoc, doc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, getFirestore, setDoc, doc, deleteDoc, getDoc } from "firebase/firestore";
 import { UpdateUserProfileDto } from './dto/UpdateUserProfileDto';
 import { LoginUserDto } from './dto/LoginUserDto';
 import { CreateAdDto } from "./dto/CreateAdDto";
@@ -155,5 +155,13 @@ export class FirebaseAuthService {
                 error
             }
         })
+    }
+
+    async gellAllAd() {
+        const querySnapshot = await getDocs(collection(this.db, "advertisement"));
+        const result = querySnapshot.forEach((doc) => {
+            return doc.data()
+        })
+        return result;
     }
 }
