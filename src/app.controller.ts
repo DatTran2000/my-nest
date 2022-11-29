@@ -1,6 +1,6 @@
 import { AppService } from './app.service';
 import { FirebaseAuthService } from './firebase-auth.service';
-import { Controller, Get, Req, Put, Post, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Req, Put, Post, Body, Param, Delete, Res, HttpCode } from '@nestjs/common';
 import { Request } from '@nestjs/common';
 import { UpdateUserProfileDto } from './dto/UpdateUserProfileDto';
 import { LoginUserDto } from './dto/LoginUserDto';

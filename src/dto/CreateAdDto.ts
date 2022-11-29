@@ -31,15 +31,19 @@ export class CreateAdDto {
     @IsString()
     uuid: string;
 
+    @ValidateNested()
     @IsObject()
     ads_tags: object;
 
+    @ValidateNested()
     @IsObject()
     banners: object;
 
+    @ValidateNested()
     @IsObject()
     limiting_conditions: object;
 
+    @ValidateNested()
     @IsObject()
     show_conditions: object;
 }
