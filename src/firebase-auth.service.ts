@@ -192,7 +192,12 @@ export class FirebaseAuthService {
         const docRef = doc(this.db, "advertisement", uuid);
 
 
-        return (collection(this.db, "advertisement"));
+        const querySnapshot = await getDocs(collection(this.db, "advertisement/uuid15/banners"));
+        querySnapshot.forEach((doc) => {
+            console.log(doc.data());
+            return doc.data()
+        })
+        // return (collection(this.db, "advertisement/uui15/banners"));
         // return await deleteDoc(docRef)
         // .then(() => {
         //     return {
@@ -205,26 +210,11 @@ export class FirebaseAuthService {
     }
 
     async gellAllAd() {
-        const querySnapshot = await getDocs(collection(this.db, "advertisement"));
-        const result = [];
+        const querySnapshot = await getDocs(collection(this.db, "advertisement/uui15/banners/uuid15"));
         querySnapshot.forEach((doc) => {
-            result.push(doc.data())
+            console.log(doc);
+            return doc
         })
-        return result.map((item) => ({
-            uuid: item.uuid,
-            unit_price: item.unit_price,
-            supplier_uuid: item.supplier_uuid,
-            start_date: item.start_date,
-            priority: item.priority,
-            link_url: item.link_url,
-            expiry_date: item.expiry_date,
-            ads_type: item.ads_type,
-            ads_remarks: item.ads_remarks,
-            ads_name: item.ads_name,
-            ads_tags: item.ads_tags,
-            limiting_conditions: item.limiting_conditions,
-            show_conditions: item.show_conditions,
-            banners: item.banners
-        }))
+
     }
 }
