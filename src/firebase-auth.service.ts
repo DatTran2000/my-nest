@@ -197,24 +197,32 @@ export class FirebaseAuthService {
             console.log(doc.data());
             return doc.data()
         })
-        // return (collection(this.db, "advertisement/uui15/banners"));
-        // return await deleteDoc(docRef)
-        // .then(() => {
-        //     return {
-        //         message: `The ad with #${uuid} has been removed `
-        //     }
-        // })
-        // .catch(() => {
-        //     throw new HttpException('Not found', HttpStatus.NOT_FOUND);
-        // })
     }
 
     async gellAllAd() {
-        const querySnapshot = await getDocs(collection(this.db, "advertisement/uui15/banners/uuid15"));
+        const querySnapshot = await getDocs(collection(this.db, "advertisement"));
+        const result = []; const arr = [];
+        const subCollection = ['ads_tags', 'banners', 'limiting_conditions', 'show_conditions'];
+        
         querySnapshot.forEach((doc) => {
-            console.log(doc);
-            return doc
+            result.push(Object.assign(doc.data() , { ads_tags: {}, banners: '', limiting_conditions: '', show_conditions: '' }));            
         })
+        
+        result.forEach((item) => {
+            
+        const subCollection = ['ads_tags', 'banners', 'limiting_conditions', 'show_conditions'];
 
+        
+            subCollection.forEach(async (sub) => {  
+                const querySubSnapshot = await getDocs(collection(this.db, `advertisement/${item.uuid}/${sub}`));    
+                          
+                querySubSnapshot.forEach((doc) => {  
+                    // item[`${sub}`] = doc.data()
+                    result.push(doc.data())
+                })
+            })
+        })
+              
+        return result
     }
 }
