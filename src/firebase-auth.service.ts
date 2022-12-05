@@ -7,7 +7,6 @@ import { UpdateUserProfileDto } from './dto/UpdateUserProfileDto';
 import { LoginUserDto } from './dto/LoginUserDto';
 import { CreateAdDto } from "./dto/CreateAdDto";
 import { UpdateAdDto } from "./dto/UpdateAdDto";
-import { Response } from "express";
 
 @Injectable()
 
@@ -65,7 +64,7 @@ export class FirebaseAuthService {
         const created_user_uuid = this.auth.currentUser ? this.auth.currentUser.uid : "xxx";
         const { ads_tags, banners, limiting_conditions, show_conditions, ...rest } = createAdDto;
         
-        const ad = await setDoc(doc(this.db, "advertisement", createAdDto.uuid), {
+        await setDoc(doc(this.db, "advertisement", createAdDto.uuid), {
             ...rest,  
         })
         .then(() => {
@@ -88,141 +87,96 @@ export class FirebaseAuthService {
             const subCollection = ['ads_tags', 'banners', 'limiting_conditions', 'show_conditions'];
             Object.keys(currentObj).forEach(async key => {
                 if (subCollection.includes(key)) {
-                    await setDoc(doc(this.db, "advertisement", createAdDto.uuid, key, createAdDto.uuid), currentObj[key]).then(() => {     
-
-                    })
+                    await setDoc(doc(this.db, "advertisement", createAdDto.uuid, key, createAdDto.uuid), currentObj[key]);
                 }
                 if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
                     sub(currentObj[key])
                 }
             })
         }
-        sub(createAdDto)
+        sub(createAdDto)        
 
-        return { ... ad, sub }
-                   
-
-        
-        // const banners_collection = doc(this.db, "advertisement", createAdDto.uuid, "banners", createAdDto.uuid);             
-        //     await setDoc(banners_collection, banners).then(() => {                
-        //         return { uuid: banners['uuid'], firestore_path: banners['firestore_path'], 
-        //         banner_group: banners['banner_group'], order: banners['order'] }
-        //     })
-
-        // const ads_tags_collection = doc(this.db, "advertisement", createAdDto.uuid, "ads_tag", createAdDto.uuid);
-        //     await setDoc(ads_tags_collection, ads_tags).then(() => {
-        //         return { tag_uuid: ads_tags['tag_uuid'] }
-        //     })
-
-        // const limiting_conditions_collection = doc(this.db, "advertisement", createAdDto.uuid, "limiting_conditions", createAdDto.uuid)
-        //     await setDoc(limiting_conditions_collection, limiting_conditions).then(() => {
-        //         return {
-        //             uuid: limiting_conditions['uuid'],
-        //             tag_uuid: limiting_conditions['tag_uuid'],
-        //             minimun: limiting_conditions['minimun'],
-        //             maximun: limiting_conditions['maximun']
-        //         }
-        //     })
-        
-        // const show_conditions_collection = doc(this.db, "advertisement", createAdDto.uuid , "show_conditions", createAdDto.uuid);
-        //     await setDoc(show_conditions_collection, show_conditions).then(() => {
-        //         return {
-        //             uuid: show_conditions['uuid'],
-        //             date_of_week_to_show: show_conditions['date_of_week_to_show'],
-        //             range_of_hours_to_show: show_conditions['range_of_hours_to_show']
-        //         }
-        //     })
-
-
+        return { ...createAdDto }
     }
 
     async updateAd(@Param('uuid') uuid : string, @Body() updateAdDto : UpdateAdDto) {
         const created_user_uuid = this.auth.currentUser ? this.auth.currentUser.uid : "xxx";
         const { ads_tags, banners, limiting_conditions, show_conditions, ...rest } = updateAdDto;
         
-        const banners_collection = doc(this.db, "advertisement", updateAdDto.uuid, "banners", updateAdDto.uuid);             
-            await updateDoc(banners_collection, banners).then(() => {                
-                return { uuid: banners['uuid'], firestore_path: banners['firestore_path'], 
-                banner_group: banners['banner_group'], order: banners['order'] }
-            })
-
-        const ads_tags_collection = doc(this.db, "advertisement", updateAdDto.uuid, "ads_tag", updateAdDto.uuid);
-            await updateDoc(ads_tags_collection, ads_tags).then(() => {
-                return { tag_uuid: ads_tags['tag_uuid'] }
-            })
-
-        const limiting_conditions_collection = doc(this.db, "advertisement", updateAdDto.uuid, "limiting_conditions", updateAdDto.uuid)
-            await updateDoc(limiting_conditions_collection, limiting_conditions).then(() => {
-                return {
-                    uuid: limiting_conditions['uuid'],
-                    tag_uuid: limiting_conditions['tag_uuid'],
-                    minimun: limiting_conditions['minimun'],
-                    maximun: limiting_conditions['maximun']
-                }
-            })
-        
-        const show_conditions_collection = doc(this.db, "advertisement", updateAdDto.uuid , "show_conditions", updateAdDto.uuid);
-            await updateDoc(show_conditions_collection, show_conditions).then(() => {
-                return {
-                    uuid: show_conditions['uuid'],
-                    date_of_week_to_show: show_conditions['date_of_week_to_show'],
-                    range_of_hours_to_show: show_conditions['range_of_hours_to_show']
-                }
-            })
-
-        const ads = await updateDoc(doc(this.db, "advertisement", updateAdDto.uuid), {
+        await setDoc(doc(this.db, "advertisement", updateAdDto.uuid), {
             ...rest,  
-            banners: banners_collection,
-            limiting_conditions: limiting_conditions_collection,
-            show_conditions: show_conditions_collection,
         })
         .then(() => {
             return {
-                uuid: updateAdDto.uuid, unit_price: updateAdDto.unit_price, supplier_uuid: updateAdDto.supplier_uuid, 
-                start_date: updateAdDto.start_date, priority: updateAdDto.priority,
-                link_url: updateAdDto.link_url, expiry_date: updateAdDto.expiry_date, created_user_uuid: created_user_uuid, 
-                ads_type: updateAdDto.ads_type, ads_remarks: updateAdDto.ads_remarks, 
-                ads_name: updateAdDto.ads_name, banners: banners, limiting_conditions: limiting_conditions_collection, show_conditions: show_conditions_collection
+                uuid: updateAdDto.uuid, 
+                unit_price: updateAdDto.unit_price, 
+                supplier_uuid: updateAdDto.supplier_uuid, 
+                start_date: updateAdDto.start_date, 
+                priority: updateAdDto.priority,
+                link_url: updateAdDto.link_url, 
+                expiry_date: updateAdDto.expiry_date, 
+                created_user_uuid: created_user_uuid, 
+                ads_type: updateAdDto.ads_type, 
+                ads_remarks: updateAdDto.ads_remarks, 
+                ads_name: updateAdDto.ads_name
             }
         });
-        return ads
+        
+        const sub = async (currentObj : CreateAdDto) => {
+            const subCollection = ['ads_tags', 'banners', 'limiting_conditions', 'show_conditions'];
+            Object.keys(currentObj).forEach(async key => {
+                if (subCollection.includes(key)) {
+                    await setDoc(doc(this.db, "advertisement", updateAdDto.uuid, key, updateAdDto.uuid), currentObj[key]);
+                }
+                if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
+                    sub(currentObj[key])
+                }
+            })
+        }
+        sub(updateAdDto)        
+
+        return { ...updateAdDto }
     }
 
     async deleteAd(@Param('uuid') uuid : string) {
+        const subCollection = ['ads_tags', 'banners', 'limiting_conditions', 'show_conditions'];
         const docRef = doc(this.db, "advertisement", uuid);
 
 
-        const querySnapshot = await getDocs(collection(this.db, "advertisement/uuid15/banners"));
-        querySnapshot.forEach((doc) => {
-            console.log(doc.data());
-            return doc.data()
-        })
+        // deleteDoc(docRef)
+        // .then(() => {
+        //     console.log("Entire Document has been deleted successfully.")
+        // })
+        // .catch(error => {
+        //     console.log(error);
+        // })
     }
 
     async gellAllAd() {
-        const querySnapshot = await getDocs(collection(this.db, "advertisement"));
-        const result = []; const arr = [];
-        const subCollection = ['ads_tags', 'banners', 'limiting_conditions', 'show_conditions'];
-        
+        const querySnapshot = await getDocs(collection(this.db, 'advertisement'));
+        const result = [];
+        const subCollection = [
+          'ads_tags',
+          'banners',
+          'limiting_conditions',
+          'show_conditions',
+        ];
+    
         querySnapshot.forEach((doc) => {
-            result.push(Object.assign(doc.data() , { ads_tags: {}, banners: '', limiting_conditions: '', show_conditions: '' }));            
-        })
-        
-        result.forEach((item) => {
-            
-        const subCollection = ['ads_tags', 'banners', 'limiting_conditions', 'show_conditions'];
-
-        
-            subCollection.forEach(async (sub) => {  
-                const querySubSnapshot = await getDocs(collection(this.db, `advertisement/${item.uuid}/${sub}`));    
-                          
-                querySubSnapshot.forEach((doc) => {  
-                    // item[`${sub}`] = doc.data()
-                    result.push(doc.data())
-                })
-            })
-        })
-              
-        return result
-    }
+          result.push(doc.data());
+        });
+    
+        for (const item of result) {
+          for (const sub of subCollection) {
+            const querySubSnapshot: any = await getDocs(
+              collection(this.db, `advertisement/${item.uuid}/${sub}`),
+            );
+            querySubSnapshot.forEach((subItem) => {
+              Object.assign(item, { [`${sub}`]: subItem.data() });
+            });
+          }
+        }
+    
+        return result;
+      }
 }
