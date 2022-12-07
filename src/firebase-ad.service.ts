@@ -147,11 +147,12 @@ export class FirebaseAdService {
         const sfRef = this.db.collection('advertisement').doc(uuid);
         const collections = await sfRef.listCollections();
         
+        
         // Delete all fields
         sfRef.delete();
          
         // Delete in subcollection
-        collections.forEach(collection => {
+        collections.forEach(collection => {            
             const collectionRef = this.db.collection(`advertisement/${uuid}/${collection.id}`);
             const query = collectionRef.orderBy('uuid').limit(10);
 
@@ -159,16 +160,7 @@ export class FirebaseAdService {
                 this.deleteQueryBatch(this.db, query, resolve).catch(reject);
             });
         });        
-
-        // subCollection.forEach((sub) => {
-        //     const collectionRef = this.db.collection(`advertisement/${uuid}/${sub}`);
-        //     const query = collectionRef.orderBy('uuid').limit(10);
-
-        //     return new Promise((resolve, reject) => {
-        //         this.deleteQueryBatch(this.db, query, resolve).catch(reject);
-        //     });
-        // })
-      }
+    }
       
     async deleteQueryBatch(db, query, resolve) {
         const snapshot = await query.get();
