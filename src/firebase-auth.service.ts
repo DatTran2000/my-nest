@@ -138,22 +138,46 @@ export class FirebaseAuthService {
         return { ...updateAdDto }
     }
 
-    async deleteAd(@Param('uuid') uuid : string) {
-        const subCollection = ['ads_tags', 'banners', 'limiting_conditions', 'show_conditions'];
-        const docRef = doc(this.db, "advertisement", uuid);
 
-
-        // deleteDoc(docRef)
-        // .then(() => {
-        //     console.log("Entire Document has been deleted successfully.")
-        // })
-        // .catch(error => {
-        //     console.log(error);
-        // })
-    }
+    async deleteAd(uuid : string) {
+        // const collectionRef = collection(this.db, 'advertisement')
+        // console.log(collectionRef);
+        
+        const collectionRef = await getDocs(collection(this.db, 'advertisement/uuid1/banners'))
+        .then((doc) => {
+        })
+      
+        return new Promise((resolve, reject) => {
+          this.deleteQueryBatch(db, query, resolve).catch(reject);
+        });
+      }
+      
+    async deleteQueryBatch(db, query, resolve) {
+        const snapshot = await query.get();
+      
+        const batchSize = snapshot.size;
+        if (batchSize === 0) {
+          // When there are no documents left, we are done
+          resolve();
+          return;
+        }
+      
+        // Delete documents in a batch
+        const batch = db.batch();
+        snapshot.docs.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+      
+        // Recurse on the next process tick, to avoid
+        // exploding the stack.
+        process.nextTick(() => {
+          this.deleteQueryBatch(db, query, resolve);
+        });
+      }
 
     async gellAllAd() {
-        const querySnapshot = await getDocs(collection(this.db, 'advertisement'));
+        const querySnapshot = await getDocs(collection(this.db, 'advertisement/uuid1/banners'));
         const result = [];
         const subCollection = [
           'ads_tags',
