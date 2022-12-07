@@ -146,10 +146,6 @@ export class FirebaseAdService {
     async deleteAd(uuid : string) {
         const sfRef = this.db.collection('advertisement').doc(uuid);
         const collections = await sfRef.listCollections();
-        
-        
-        // Delete all fields
-        sfRef.delete();
          
         // Delete in subcollection
         collections.forEach(collection => {            
@@ -159,7 +155,10 @@ export class FirebaseAdService {
             return new Promise((resolve, reject) => {
                 this.deleteQueryBatch(this.db, query, resolve).catch(reject);
             });
-        });        
+        });    
+        
+        // Delete all fields
+        sfRef.delete();
     }
       
     async deleteQueryBatch(db, query, resolve) {
