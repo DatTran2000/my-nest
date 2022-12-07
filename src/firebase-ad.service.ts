@@ -1,16 +1,19 @@
 import { Body, HttpException, HttpStatus, Inject, Injectable, Module, Param, Res } from "@nestjs/common";
 import { ConfigService } from '@nestjs/config';
-import { initializeApp, getApp } from "firebase/app";
+// import { initializeApp, getApp } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { collection, getDocs, getFirestore, setDoc, doc, deleteDoc, getDoc, updateDoc } from "firebase/firestore";
+import { collection, getDocs,  setDoc, doc, deleteDoc, getDoc, updateDoc } from "firebase/firestore";
 import { UpdateUserProfileDto } from './dto/UpdateUserProfileDto';
 import { LoginUserDto } from './dto/LoginUserDto';
 import { CreateAdDto } from "./dto/CreateAdDto";
 import { UpdateAdDto } from "./dto/UpdateAdDto";
+import { initializeApp, applicationDefault, cert } from 'firebase-admin/app';
+import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
+var serviceAccount = require("../src/serviceAccountKey.json");
 
 @Injectable()
 
-export class FirebaseAuthService {
+export class FirebaseAdService {
     private auth;
     private db;
 
@@ -26,9 +29,10 @@ export class FirebaseAuthService {
             measurementId: "G-V63CBVHS60"
         };
 
-        const app = initializeApp(firebaseConfig);
-        this.auth = getAuth(app);
-        this.db = getFirestore(app);
+        initializeApp({
+            credential: cert(serviceAccount)
+          });
+        this.db = getFirestore();
     }
 
     async getLogin(@Body() loginUserDto : LoginUserDto) {
@@ -140,41 +144,55 @@ export class FirebaseAuthService {
 
 
     async deleteAd(uuid : string) {
-        // const collectionRef = collection(this.db, 'advertisement')
-        // console.log(collectionRef);
+        const sfRef = this.db.collection('advertisement').doc(uuid);
+        const collections = await sfRef.listCollections();
         
-        // const collectionRef = await getDocs(collection(this.db, 'advertisement/uuid1/banners'))
-        // .then((doc) => {
+        // Delete all fields
+        sfRef.delete();
+         
+        // Delete in subcollection
+        collections.forEach(collection => {
+            const collectionRef = this.db.collection(`advertisement/${uuid}/${collection.id}`);
+            const query = collectionRef.orderBy('uuid').limit(10);
+
+            return new Promise((resolve, reject) => {
+                this.deleteQueryBatch(this.db, query, resolve).catch(reject);
+            });
+        });        
+
+        // subCollection.forEach((sub) => {
+        //     const collectionRef = this.db.collection(`advertisement/${uuid}/${sub}`);
+        //     const query = collectionRef.orderBy('uuid').limit(10);
+
+        //     return new Promise((resolve, reject) => {
+        //         this.deleteQueryBatch(this.db, query, resolve).catch(reject);
+        //     });
         // })
-      
-        // return new Promise((resolve, reject) => {
-        //   this.deleteQueryBatch(db, query, resolve).catch(reject);
-        // });
       }
       
-    // async deleteQueryBatch(db, query, resolve) {
-    //     const snapshot = await query.get();
+    async deleteQueryBatch(db, query, resolve) {
+        const snapshot = await query.get();
       
-    //     const batchSize = snapshot.size;
-    //     if (batchSize === 0) {
-    //       // When there are no documents left, we are done
-    //       resolve();
-    //       return;
-    //     }
+        const batchSize = snapshot.size;
+        if (batchSize === 0) {
+          // When there are no documents left, we are done
+          resolve();
+          return;
+        }
       
-    //     // Delete documents in a batch
-    //     const batch = db.batch();
-    //     snapshot.docs.forEach((doc) => {
-    //       batch.delete(doc.ref);
-    //     });
-    //     await batch.commit();
+        // Delete documents in a batch
+        const batch = db.batch();
+        snapshot.docs.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
       
-    //     // Recurse on the next process tick, to avoid
-    //     // exploding the stack.
-    //     process.nextTick(() => {
-    //       this.deleteQueryBatch(db, query, resolve);
-    //     });
-    //   }
+        // Recurse on the next process tick, to avoid
+        // exploding the stack.
+        process.nextTick(() => {
+          this.deleteQueryBatch(db, query, resolve);
+        });
+      }
 
     async gellAllAd() {
         const querySnapshot = await getDocs(collection(this.db, 'advertisement/uuid1/banners'));
