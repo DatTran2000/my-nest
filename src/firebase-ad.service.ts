@@ -23,7 +23,7 @@ export class FirebaseAdService {
         // Delete in subcollection
         collections.forEach(collection => {            
             const collectionRef = this.db.collection(`advertisement/${uuid}/${collection.id}`);
-            const query = collectionRef.orderBy('uuid').limit(10);
+            const query = collectionRef.limit(10);
 
             return new Promise((resolve, reject) => {
                 this.deleteQueryBatch(this.db, query, resolve).catch(reject);

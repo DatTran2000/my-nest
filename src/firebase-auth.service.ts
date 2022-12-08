@@ -165,5 +165,5 @@ export class FirebaseAuthService {
         }
     
         return result;
-      }
+    }
 }
