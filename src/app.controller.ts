@@ -1,11 +1,19 @@
 import { AppService } from './app.service';
 import { FirebaseAuthService } from './firebase-auth.service';
-import { Controller, Get, Req, Put } from '@nestjs/common';
+import { FirebaseAdService } from './firebase-ad.service';
+import { Controller, Get, Req, Put, Post, Body, Param, Delete, Res, HttpCode } from '@nestjs/common';
 import { Request } from '@nestjs/common';
+import { UpdateUserProfileDto } from './dto/UpdateUserProfileDto';
+import { LoginUserDto } from './dto/LoginUserDto';
+import { CreateAdDto } from './dto/CreateAdDto';
+import { UpdateAdDto } from './dto/UpdateAdDto';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService, private readonly firebaseAuthService : FirebaseAuthService) {}
+  constructor(
+    private readonly appService: AppService, 
+    private readonly firebaseAdService : FirebaseAdService,
+    private readonly firebaseAuthService : FirebaseAuthService) {}
 
   @Get()
   getHello(): string {
@@ -13,12 +21,32 @@ export class AppController {
   }
 
   @Get('login') 
-  getLogin(@Req() req : Request): object {
-    return this.firebaseAuthService.getLogin(req);
+  getLogin(@Body() loginUserDto : LoginUserDto): object {
+    return this.firebaseAuthService.getLogin(loginUserDto);
   }
 
   @Put('update-user') 
-  updateUser(@Req() req : Request): any {
-    return this.firebaseAuthService.updateUser(req);
+  updateUser(@Body() updateUserProfileDto: UpdateUserProfileDto): object {
+    return this.firebaseAuthService.updateUser(updateUserProfileDto);
+  }
+
+  @Post('create-ad')
+  createAd(@Body() createAdDto : CreateAdDto): object {
+    return this.firebaseAuthService.createAd(createAdDto);
+  }
+
+  @Put('update/ad/:uuid')
+  updateAd(@Param('uuid') uuid : string, @Body() updateAdDto : UpdateAdDto) {
+    return this.firebaseAuthService.updateAd(uuid, updateAdDto);
+  }
+
+  @Delete('delete/ad/:uuid')
+  deleteAd(@Param('uuid') uuid : string) {
+    return this.firebaseAdService.deleteAd(uuid);
+  }
+
+  @Get('all-ad')
+  getAllAd() {
+    return this.firebaseAuthService.gellAllAd();
   }
 }
