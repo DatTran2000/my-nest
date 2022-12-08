@@ -1,8 +1,8 @@
 import { Body, HttpException, HttpStatus, Inject, Injectable, Module, Param, Res } from "@nestjs/common";
 import { ConfigService } from '@nestjs/config';
 import { initializeApp, getApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { collection, getDocs, getFirestore, setDoc, doc, deleteDoc, getDoc, updateDoc } from "firebase/firestore";
+import { Auth, getAuth, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { collection, getDocs, getFirestore, setDoc, doc, deleteDoc, getDoc, updateDoc, Firestore } from "firebase/firestore";
 import { UpdateUserProfileDto } from './dto/UpdateUserProfileDto';
 import { LoginUserDto } from './dto/LoginUserDto';
 import { CreateAdDto } from "./dto/CreateAdDto";
@@ -11,8 +11,8 @@ import { UpdateAdDto } from "./dto/UpdateAdDto";
 @Injectable()
 
 export class FirebaseAuthService {
-    private auth;
-    private db;
+    private auth: Auth;
+    private db: Firestore;
 
     constructor(@Inject(ConfigService) private readonly config: ConfigService) {
         const firebaseConfig = {
@@ -138,44 +138,7 @@ export class FirebaseAuthService {
         return { ...updateAdDto }
     }
 
-
-    async deleteAd(uuid : string) {
-        // const collectionRef = collection(this.db, 'advertisement')
-        // console.log(collectionRef);
-        
-        // const collectionRef = await getDocs(collection(this.db, 'advertisement/uuid1/banners'))
-        // .then((doc) => {
-        // })
-      
-        // return new Promise((resolve, reject) => {
-        //   this.deleteQueryBatch(db, query, resolve).catch(reject);
-        // });
-      }
-      
-    // async deleteQueryBatch(db, query, resolve) {
-    //     const snapshot = await query.get();
-      
-    //     const batchSize = snapshot.size;
-    //     if (batchSize === 0) {
-    //       // When there are no documents left, we are done
-    //       resolve();
-    //       return;
-    //     }
-      
-    //     // Delete documents in a batch
-    //     const batch = db.batch();
-    //     snapshot.docs.forEach((doc) => {
-    //       batch.delete(doc.ref);
-    //     });
-    //     await batch.commit();
-      
-    //     // Recurse on the next process tick, to avoid
-    //     // exploding the stack.
-    //     process.nextTick(() => {
-    //       this.deleteQueryBatch(db, query, resolve);
-    //     });
-    //   }
-
+     
     async gellAllAd() {
         const querySnapshot = await getDocs(collection(this.db, 'advertisement/uuid1/banners'));
         const result = [];
