@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsDateString , IsObject, ValidateNested } from 'class-validator';
+import { IsString, IsNumber, IsDateString , IsObject, ValidateNested, IsArray, isIn, isArray, IsIn, IsNotEmpty } from 'class-validator';
 
 export class CreateAdDto {
     @IsString()
@@ -32,18 +32,18 @@ export class CreateAdDto {
     uuid: string;
 
     @ValidateNested()
-    @IsObject()
-    ads_tags: object;
+    @IsNotEmpty()
+    ads_tags: any;
 
     @ValidateNested()
-    @IsObject()
-    banners: object;
+    @IsNotEmpty()
+    banners: any;
 
     @ValidateNested()
-    @IsObject()
-    limiting_conditions: object;
+    @IsNotEmpty()
+    limiting_conditions: any;
 
     @ValidateNested()
-    @IsObject()
-    show_conditions: object;
+    @IsNotEmpty()
+    show_conditions: any;
 }

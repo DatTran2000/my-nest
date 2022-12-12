@@ -1,9 +1,7 @@
-import { IsString, IsNumber, IsDateString , IsObject, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsString, IsNumber, IsDateString , IsObject, ValidateNested, IsNotEmpty } from 'class-validator';
 
 
 export class UpdateAdDto {
-
     @IsString()
     ads_name: string;
 
@@ -35,18 +33,18 @@ export class UpdateAdDto {
     uuid: string;
 
     @ValidateNested()
-    @IsObject()
-    ads_tags: object;
+    @IsNotEmpty()
+    ads_tags: any;
 
     @ValidateNested()
-    @IsObject()
-    banners: object;
+    @IsNotEmpty()
+    banners: any;
 
     @ValidateNested()
-    @IsObject()
-    limiting_conditions: object;
+    @IsNotEmpty()
+    limiting_conditions: any;
 
     @ValidateNested()
-    @IsObject()
-    show_conditions: object;
+    @IsNotEmpty()
+    show_conditions: any;
 }

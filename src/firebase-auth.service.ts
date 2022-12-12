@@ -87,7 +87,13 @@ export class FirebaseAuthService {
             const subCollection = ['ads_tags', 'banners', 'limiting_conditions', 'show_conditions'];
             Object.keys(currentObj).forEach(async key => {
                 if (subCollection.includes(key)) {
-                    await setDoc(doc(this.db, "advertisement", createAdDto.uuid, key, createAdDto.uuid), currentObj[key]);
+                    if(Array.isArray(currentObj[key])) {
+                        for(let i = 0; i < currentObj[key].length; i ++) {
+                            await setDoc(doc(this.db, "advertisement", createAdDto.uuid, key, currentObj[key][i].uuid), currentObj[key][i]);
+                        }
+                    } else {
+                        await setDoc(doc(this.db, "advertisement", createAdDto.uuid, key, createAdDto.uuid), currentObj[key]);
+                    }
                 }
                 if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
                     sub(currentObj[key])
@@ -122,11 +128,17 @@ export class FirebaseAuthService {
             }
         });
         
-        const sub = async (currentObj : CreateAdDto) => {
+        const sub = async (currentObj : UpdateAdDto) => {
             const subCollection = ['ads_tags', 'banners', 'limiting_conditions', 'show_conditions'];
             Object.keys(currentObj).forEach(async key => {
                 if (subCollection.includes(key)) {
-                    await setDoc(doc(this.db, "advertisement", updateAdDto.uuid, key, updateAdDto.uuid), currentObj[key]);
+                    if(Array.isArray(currentObj[key])) {
+                        for(let i = 0; i < currentObj[key].length; i ++) {
+                            await setDoc(doc(this.db, "advertisement", updateAdDto.uuid, key, currentObj[key][i].uuid), currentObj[key][i]);
+                        }
+                    } else {
+                        await setDoc(doc(this.db, "advertisement", updateAdDto.uuid, key, updateAdDto.uuid), currentObj[key]);
+                    }
                 }
                 if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
                     sub(currentObj[key])

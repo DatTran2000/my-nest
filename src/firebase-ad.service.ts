@@ -23,8 +23,8 @@ export class FirebaseAdService {
         // Delete in subcollection
         collections.forEach(collection => {            
             const collectionRef = this.db.collection(`advertisement/${uuid}/${collection.id}`);
-            
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve, reject) => {          
+
                 this.deleteQueryBatch(this.db, collectionRef, resolve).catch(reject);
             });
         });    
@@ -33,7 +33,7 @@ export class FirebaseAdService {
         sfRef.delete();
     }
       
-    async deleteQueryBatch(db, query, resolve) {
+    async deleteQueryBatch(db, query, resolve) {        
         const snapshot = await query.get();        
         const batchSize = snapshot.size;
 
