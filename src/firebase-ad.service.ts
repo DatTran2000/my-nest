@@ -18,15 +18,14 @@ export class FirebaseAdService {
 
     async deleteAd(uuid : string) {
         const sfRef = this.db.collection('advertisement').doc(uuid);
-        const collections = await sfRef.listCollections();
+        const collections = await sfRef.listCollections(); // Get subcollection
          
         // Delete in subcollection
         collections.forEach(collection => {            
             const collectionRef = this.db.collection(`advertisement/${uuid}/${collection.id}`);
-            const query = collectionRef.limit(10);
-
+            
             return new Promise((resolve, reject) => {
-                this.deleteQueryBatch(this.db, query, resolve).catch(reject);
+                this.deleteQueryBatch(this.db, collectionRef, resolve).catch(reject);
             });
         });    
         
