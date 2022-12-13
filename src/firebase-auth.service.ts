@@ -87,7 +87,7 @@ export class FirebaseAuthService {
             const subCollection = ['ads_tags', 'banners', 'limiting_conditions', 'show_conditions'];
             Object.keys(currentObj).forEach(async key => {
                 if (subCollection.includes(key)) {
-                    if(Array.isArray(currentObj[key])) {
+                    if(Array.isArray(currentObj[key] && currentObj[key].length > 0 )) {
                         for(let i = 0; i < currentObj[key].length; i ++) {
                             await setDoc(doc(this.db, "advertisement", createAdDto.uuid, key, currentObj[key][i].uuid), currentObj[key][i]);
                         }
@@ -132,7 +132,7 @@ export class FirebaseAuthService {
             const subCollection = ['ads_tags', 'banners', 'limiting_conditions', 'show_conditions'];
             Object.keys(currentObj).forEach(async key => {
                 if (subCollection.includes(key)) {
-                    if(Array.isArray(currentObj[key])) {
+                    if(Array.isArray(currentObj[key] && currentObj[key].length > 0 )) {
                         for(let i = 0; i < currentObj[key].length; i ++) {
                             await setDoc(doc(this.db, "advertisement", updateAdDto.uuid, key, currentObj[key][i].uuid), currentObj[key][i]);
                         }
